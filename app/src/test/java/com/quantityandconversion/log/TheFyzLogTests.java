@@ -6,8 +6,6 @@
 
 package com.quantityandconversion.log;
 
-import android.util.Log;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,40 +39,18 @@ public class TheFyzLogTests {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    /**
-     * This MUST reflect the {@link FyzLog#getLevelTag(int)} method
-     */
-    private static String getLevelTag(final int level) {
-        switch (level) {
-            case Log.VERBOSE:
-                return "V";
-            case Log.DEBUG:
-                return "D";
-            case Log.INFO:
-                return "I";
-            case Log.WARN:
-                return "W";
-            case Log.ERROR:
-                return "E";
-            case Log.ASSERT:
-                return "WTF";
-            default:
-                return "?";
-        }
-    }
-
     @Before
     public void setup() {
-        FyzLog.logLevel = Log.VERBOSE;
+        FyzLog.logLevel = LogLevel.VERBOSE;
         FyzLog.doPrint = false;
         systemOutRule.clearLog();
     }
 
-    private String configureSystemTest(final String prefix, final int level) {
+    private String configureSystemTest(final LogLevel currentLogLevel, final LogLevel attemptingLogLevel) {
         systemOutRule.clearLog();
         FyzLog.doPrint = true;
 
-        final String logLevel = prefix + "@" + getLevelTag(level) + "/ ";
+        final String logLevel = attemptingLogLevel.tag() + "@" + currentLogLevel.tag() + "/ ";
         final String tag = "FYZ:TheFyzLogTests ";
         final String thread = "[main] ";
         return logLevel + tag + thread;
@@ -95,46 +71,33 @@ public class TheFyzLogTests {
     @Test
     public void massiveTestOfAllPrintMessageCombinations() {
         //Tracks how many tests we performed
-        int ctr = 0;//Looping over the available Log calls
-        for (final String s : new String[]{"V", "D", "I", "W", "E", "WTF"}) {
-            //Looping over each logLevel, with an extra setting on each side
-            for (int i = Log.VERBOSE - 1; i <= Log.ASSERT + 1; i++) {
+        int ctr = 0;
+        final LogLevel[] logLevels = new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT};
+        for (final LogLevel currentLogLevel : logLevels) {
+            //Set the Log Level
+            FyzLog.logLevel = currentLogLevel;
+            //Looping over each logLevel
+            for (final LogLevel attemptingLogLevel : logLevels) {
                 //Arrange
-                final String prefix = configureSystemTest(s, i);
+                final String prefix = configureSystemTest(currentLogLevel, attemptingLogLevel);
                 final String msg = message();
                 final String method = Thread.currentThread().getStackTrace()[1].getMethodName() + " : ";
 
-                //Set the Log Level
-                FyzLog.logLevel = i;
 
                 //Prep the expected value
                 final String expected = prefix + method + msg;
 
                 //Act
-                switch (s) {
-                    case "V":
-                        FyzLog.v(msg);
-                        break;
-                    case "D":
-                        FyzLog.d(msg);
-                        break;
-                    case "I":
-                        FyzLog.i(msg);
-                        break;
-                    case "W":
-                        FyzLog.w(msg);
-                        break;
-                    case "E":
-                        FyzLog.e(msg);
-                        break;
-                    case "WTF":
-                        FyzLog.wtf(msg);
-                        break;
-                }
+                if (attemptingLogLevel == LogLevel.VERBOSE) FyzLog.v(msg);
+                else if (attemptingLogLevel == LogLevel.DEBUG) FyzLog.d(msg);
+                else if (attemptingLogLevel == LogLevel.INFO) FyzLog.i(msg);
+                else if (attemptingLogLevel == LogLevel.WARN) FyzLog.w(msg);
+                else if (attemptingLogLevel == LogLevel.ERROR) FyzLog.e(msg);
+                else if (attemptingLogLevel == LogLevel.ASSERT) FyzLog.wtf(msg);
 
                 //Assert
                 final String target = systemOutRule.getLog();
-                assertEquals("Failed at [s=" + s + "][i=" + i + "]", expected + "\n", target);
+                assertEquals("Failed at [currentLogLevel=" + currentLogLevel.tag() + "][attemptingLogLevel=" + attemptingLogLevel.tag() + "]", expected + "\n", target);
 
                 //A test ran, inc
                 ctr++;
@@ -142,7 +105,7 @@ public class TheFyzLogTests {
         }
 
         //Confirm we ran the expected number of tests
-        assertThat(ctr).isEqualTo(6 * (6 + 2));
+        assertThat(ctr).isEqualTo(6 * 6);
     }
 
     @Test
@@ -152,28 +115,14 @@ public class TheFyzLogTests {
         //We're printing
         FyzLog.doPrint = true;
         //Looping over each logLevel
-        for (int i = Log.VERBOSE; i <= Log.ASSERT; i++) {
+        for (final LogLevel logLevel : new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT}) {
             try {
-                switch (i) {
-                    case Log.VERBOSE:
-                        FyzLog.v(null);
-                        break;
-                    case Log.DEBUG:
-                        FyzLog.d(null);
-                        break;
-                    case Log.INFO:
-                        FyzLog.i(null);
-                        break;
-                    case Log.WARN:
-                        FyzLog.w(null);
-                        break;
-                    case Log.ERROR:
-                        FyzLog.e(null);
-                        break;
-                    case Log.ASSERT:
-                        FyzLog.wtf(null);
-                        break;
-                }
+                if (logLevel == LogLevel.VERBOSE) FyzLog.v(null);
+                else if (logLevel == LogLevel.DEBUG) FyzLog.d(null);
+                else if (logLevel == LogLevel.INFO) FyzLog.i(null);
+                else if (logLevel == LogLevel.WARN) FyzLog.w(null);
+                else if (logLevel == LogLevel.ERROR) FyzLog.e(null);
+                else if (logLevel == LogLevel.ASSERT) FyzLog.wtf(null);
                 //We're expecting exceptions, make sure we don't get here
                 fail("Should Have Thrown");
             } catch (final IllegalArgumentException e) {
@@ -192,45 +141,38 @@ public class TheFyzLogTests {
         //Tracks how many tests we performed
         int ctr = 0;
         //Looping over the available Log calls
-        for (final String s : new String[]{"V", "D", "I", "W", "E", "WTF"}) {
-            //Looping over each logLevel, with an extra setting on each side
-            for (int i = Log.VERBOSE - 1; i <= Log.ASSERT + 1; i++) {
+        final LogLevel[] logLevels = new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT};
+        for (final LogLevel currentLogLevel : logLevels) {
+            //Set the Log Level
+            FyzLog.logLevel = currentLogLevel;
+            //Looping over each logLevel
+            for (final LogLevel attemptingLogLevel : logLevels) {
                 //Arrange
-                final String prefix = configureSystemTest(s, i);
+                final String prefix = configureSystemTest(currentLogLevel, attemptingLogLevel);
                 final String msg = messageFormat();
                 final String method = Thread.currentThread().getStackTrace()[1].getMethodName() + " : ";
-
-                //Set the Log Level
-                FyzLog.logLevel = i;
 
                 //Prep the expected value
                 final String expected = prefix + method + msg;
 
                 //Act
-                switch (s) {
-                    case "V":
-                        FyzLog.v(messageFormat(), messageArgs());
-                        break;
-                    case "D":
-                        FyzLog.d(messageFormat(), messageArgs());
-                        break;
-                    case "I":
-                        FyzLog.i(messageFormat(), messageArgs());
-                        break;
-                    case "W":
-                        FyzLog.w(messageFormat(), messageArgs());
-                        break;
-                    case "E":
-                        FyzLog.e(messageFormat(), messageArgs());
-                        break;
-                    case "WTF":
-                        FyzLog.wtf(messageFormat(), messageArgs());
-                        break;
-                }
+
+                if (attemptingLogLevel == LogLevel.VERBOSE)
+                    FyzLog.v(messageFormat(), messageArgs());
+                else if (attemptingLogLevel == LogLevel.DEBUG)
+                    FyzLog.d(messageFormat(), messageArgs());
+                else if (attemptingLogLevel == LogLevel.INFO)
+                    FyzLog.i(messageFormat(), messageArgs());
+                else if (attemptingLogLevel == LogLevel.WARN)
+                    FyzLog.w(messageFormat(), messageArgs());
+                else if (attemptingLogLevel == LogLevel.ERROR)
+                    FyzLog.e(messageFormat(), messageArgs());
+                else if (attemptingLogLevel == LogLevel.ASSERT)
+                    FyzLog.wtf(messageFormat(), messageArgs());
 
                 //Assert
                 final String target = systemOutRule.getLog();
-                assertEquals("Failed at [s=" + s + "][i=" + i + "]",
+                assertEquals("Failed at [currentLogLevel=" + currentLogLevel.tag() + "][attemptingLogLevel=" + attemptingLogLevel.tag() + "]",
                         target,
                         String.format(expected, messageArgs()) + "\n");
 
@@ -239,7 +181,7 @@ public class TheFyzLogTests {
             }
         }
         //Confirm we ran the expected number of tests
-        assertThat(ctr).isEqualTo(6 * (6 + 2));
+        assertThat(ctr).isEqualTo(6 * 6);
     }
 
     /**
@@ -250,65 +192,53 @@ public class TheFyzLogTests {
     public void massiveAndroidLogging() {
         //Tracks how many tests we performed
         int ctr = 0;
-        //Used to check if an exception should be thrown.
-        final int offset = Log.VERBOSE;
-        //The variation in the exception message
-        final String[] tags = new String[]{"v", "d", "i", "w", "e", "wtf"};
+        final LogLevel[] logLevels = new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT};
         //Looping over the available Log calls
-        for (int idx = 0; idx < tags.length; idx++) {
-            //Looping over each logLevel, with an extra setting on each side
-            for (int i = Log.VERBOSE - 1; i <= Log.ASSERT + 1; i++) {
-                //Set the Log Level
-                FyzLog.logLevel = i;
-                //Get the tag
-                final String tag = tags[idx];
+        for (final LogLevel currentLogLevel : logLevels) {
+            //Set the Log Level
+            FyzLog.logLevel = currentLogLevel;
+            //Looping over each logLevel
+            for (final LogLevel attemptingLogLevel : logLevels) {
                 //Determine if logging will be attempted, which will result in an exception
-                final boolean shouldTryToLog = i <= idx + offset;
+                final boolean shouldTryToLog = attemptingLogLevel.logAt(currentLogLevel);
                 //Show what's about to be performed. If this breaks, it's HUGELY useful.
-                System.out.println("[idx=" + idx + ";" + tag + "][i=" + i + "][shouldTryToLog=" + shouldTryToLog + "]");
+                System.out.println("[currentLogLevel=" + currentLogLevel.tag() + "][attemptingLogLevel=" + attemptingLogLevel.tag() + "][shouldTryToLog=" + shouldTryToLog + "]");
                 //INVOKE
                 try {
-                    switch (tag) {
-                        case "v":
-                            FyzLog.v(messageFormat(), messageArgs());
-                            break;
-                        case "d":
-                            FyzLog.d(messageFormat(), messageArgs());
-                            break;
-                        case "i":
-                            FyzLog.i(messageFormat(), messageArgs());
-                            break;
-                        case "w":
-                            FyzLog.w(messageFormat(), messageArgs());
-                            break;
-                        case "e":
-                            FyzLog.e(messageFormat(), messageArgs());
-                            break;
-                        case "wtf":
-                            FyzLog.wtf(messageFormat(), messageArgs());
-                            break;
-                    }
+                    if (attemptingLogLevel == LogLevel.VERBOSE)
+                        FyzLog.v(messageFormat(), messageArgs());
+                    else if (attemptingLogLevel == LogLevel.DEBUG)
+                        FyzLog.d(messageFormat(), messageArgs());
+                    else if (attemptingLogLevel == LogLevel.INFO)
+                        FyzLog.i(messageFormat(), messageArgs());
+                    else if (attemptingLogLevel == LogLevel.WARN)
+                        FyzLog.w(messageFormat(), messageArgs());
+                    else if (attemptingLogLevel == LogLevel.ERROR)
+                        FyzLog.e(messageFormat(), messageArgs());
+                    else if (attemptingLogLevel == LogLevel.ASSERT)
+                        FyzLog.wtf(messageFormat(), messageArgs());
+
                     //If we got here, we did not expect an exception, prove it
-                    assertFalse("[idx=" + idx + ";" + tag + "][i=" + i + "]", shouldTryToLog);
+                    assertFalse("[currentLogLevel=" + currentLogLevel.tag() + "][attemptingLogLevel=" + attemptingLogLevel.tag() + "]", shouldTryToLog);
                 } catch (final RuntimeException e) {
                     //If we got here, we expected to, prove it
                     assertThat(shouldTryToLog).isTrue();
                     //Since this is kinda a catch all exception, make sure it's what we wanted
-                    assertThat(e.getMessage()).isEqualTo("Method " + tag + " in android.util.Log not mocked. See http://g.co/androidstudio/not-mocked for details.");
+                    assertThat(e.getMessage()).isEqualTo("Method " + attemptingLogLevel.tag().toLowerCase() + " in android.util.Log not mocked. See http://g.co/androidstudio/not-mocked for details.");
                 }
                 //A test ran, inc
                 ctr++;
             }
         }
         //Confirm we ran the expected number of tests
-        assertThat(ctr).isEqualTo(6 * (6 + 2));
+        assertThat(ctr).isEqualTo(6 * 6);
     }
 
     @Test
     public void androidLogDoesNothingGivenNull() {
         FyzLog.doPrint = false;
         systemOutRule.clearLog();
-        FyzLog.logLevel = Log.VERBOSE - 1;
+        FyzLog.logLevel = LogLevel.VERBOSE;
         //All calls should bail w/o doing anything
         FyzLog.v(null);
         FyzLog.d(null);
@@ -321,5 +251,4 @@ public class TheFyzLogTests {
         assertThat(systemOutRule.getLog()).isNullOrEmpty();
         assertTrue("It should have gotten here", true);
     }
-
 }

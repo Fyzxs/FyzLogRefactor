@@ -41,7 +41,7 @@ public final class FyzLog {
      * Default value is {@link Log#VERBOSE the lowest setting}
      */
     @VisibleForTesting
-    public static int logLevel = Log.VERBOSE;
+    public static LogLevel logLevel = LogLevel.VERBOSE;
 
 
     /**
@@ -61,9 +61,9 @@ public final class FyzLog {
      */
     public static void v(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.VERBOSE, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.VERBOSE, logLevel, msgFormat, args);
         } else {
-            log(Log.VERBOSE, msgFormat, args);
+            log(LogLevel.VERBOSE, msgFormat, args);
         }
     }
 
@@ -84,9 +84,9 @@ public final class FyzLog {
      */
     public static void d(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.DEBUG, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.DEBUG, logLevel, msgFormat, args);
         } else {
-            log(Log.DEBUG, msgFormat, args);
+            log(LogLevel.DEBUG, msgFormat, args);
         }
     }
 
@@ -107,9 +107,9 @@ public final class FyzLog {
      */
     public static void i(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.INFO, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.INFO, logLevel, msgFormat, args);
         } else {
-            log(Log.INFO, msgFormat, args);
+            log(LogLevel.INFO, msgFormat, args);
         }
     }
 
@@ -130,9 +130,9 @@ public final class FyzLog {
      */
     public static void w(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.WARN, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.WARN, logLevel, msgFormat, args);
         } else {
-            log(Log.WARN, msgFormat, args);
+            log(LogLevel.WARN, msgFormat, args);
         }
     }
     //endregion
@@ -156,9 +156,9 @@ public final class FyzLog {
      */
     public static void e(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.ERROR, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.ERROR, logLevel, msgFormat, args);
         } else {
-            log(Log.ERROR, msgFormat, args);
+            log(LogLevel.ERROR, msgFormat, args);
         }
     }
 
@@ -179,9 +179,9 @@ public final class FyzLog {
      */
     public static void wtf(@NonNull final String msgFormat, final Object... args) {
         if (doPrint) {
-            Logger.SystemOut.println(Log.ASSERT, logLevel, msgFormat, args);
+            Logger.SystemOut.println(LogLevel.ASSERT, logLevel, msgFormat, args);
         } else {
-            log(Log.ASSERT, msgFormat, args);
+            log(LogLevel.ASSERT, msgFormat, args);
         }
     }
 
@@ -194,33 +194,25 @@ public final class FyzLog {
      * @param msgFormat the message format string
      * @param args      the args to format in
      */
-    private static void log(final int level, final String msgFormat, final Object... args) {
-        if (level >= logLevel && msgFormat != null) {
+    private static void log(final LogLevel level, final String msgFormat, final Object... args) {
+        if (level.logAt(logLevel) && msgFormat != null) {
             final StackTraceElement frame = getCallingStackTraceElement();
             final String tag = createTag(frame);
             final String msg = String.format(Locale.US, msgFormat, args);
             final String message = createMessage(frame, msg);
 
-            switch (level) {
-                case Log.VERBOSE:
+            if(level == LogLevel.VERBOSE)
                     Log.v(tag, message);
-                    break;
-                case Log.DEBUG:
+            else if(level == LogLevel.DEBUG)
                     Log.d(tag, message);
-                    break;
-                case Log.INFO:
-                    Log.i(tag, message);
-                    break;
-                case Log.WARN:
-                    Log.w(tag, message);
-                    break;
-                case Log.ERROR:
+            else if(level == LogLevel.INFO)
+                Log.i(tag, message);
+            else if(level == LogLevel.WARN)
+                Log.w(tag, message);
+            else if(level == LogLevel.ERROR)
                     Log.e(tag, message);
-                    break;
-                case Log.ASSERT:
+            else if(level == LogLevel.ASSERT)
                     Log.wtf(tag, message);
-                    break;
-            }
         }
     }
 
