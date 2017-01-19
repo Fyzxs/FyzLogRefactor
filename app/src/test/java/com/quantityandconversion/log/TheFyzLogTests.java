@@ -41,14 +41,14 @@ public class TheFyzLogTests {
 
     @Before
     public void setup() {
-        FyzLog.logLevel = LogLevel.VERBOSE;
-        FyzLog.doPrint = false;
+        FyzLog.updateCurrentLogLevel(LogLevel.VERBOSE);
+        FyzLog.writeToLog();
         systemOutRule.clearLog();
     }
 
     private String configureSystemTest(final LogLevel currentLogLevel, final LogLevel attemptingLogLevel) {
         systemOutRule.clearLog();
-        FyzLog.doPrint = true;
+        FyzLog.writeToSystem();
 
         final String logLevel = attemptingLogLevel.tag() + "@" + currentLogLevel.tag() + "/ ";
         final String tag = "FYZ:TheFyzLogTests ";
@@ -75,7 +75,7 @@ public class TheFyzLogTests {
         final LogLevel[] logLevels = new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT};
         for (final LogLevel currentLogLevel : logLevels) {
             //Set the Log Level
-            FyzLog.logLevel = currentLogLevel;
+            FyzLog.updateCurrentLogLevel(currentLogLevel);
             //Looping over each logLevel
             for (final LogLevel attemptingLogLevel : logLevels) {
                 //Arrange
@@ -113,7 +113,7 @@ public class TheFyzLogTests {
         //Tracks how many tests we performed
         int ctr = 0;
         //We're printing
-        FyzLog.doPrint = true;
+        FyzLog.writeToSystem();
         //Looping over each logLevel
         for (final LogLevel logLevel : new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT}) {
             try {
@@ -144,7 +144,7 @@ public class TheFyzLogTests {
         final LogLevel[] logLevels = new LogLevel[]{LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.ASSERT};
         for (final LogLevel currentLogLevel : logLevels) {
             //Set the Log Level
-            FyzLog.logLevel = currentLogLevel;
+            FyzLog.updateCurrentLogLevel(currentLogLevel);
             //Looping over each logLevel
             for (final LogLevel attemptingLogLevel : logLevels) {
                 //Arrange
@@ -196,7 +196,7 @@ public class TheFyzLogTests {
         //Looping over the available Log calls
         for (final LogLevel currentLogLevel : logLevels) {
             //Set the Log Level
-            FyzLog.logLevel = currentLogLevel;
+            FyzLog.updateCurrentLogLevel(currentLogLevel);
             //Looping over each logLevel
             for (final LogLevel attemptingLogLevel : logLevels) {
                 //Determine if logging will be attempted, which will result in an exception
@@ -236,9 +236,9 @@ public class TheFyzLogTests {
 
     @Test
     public void androidLogDoesNothingGivenNull() {
-        FyzLog.doPrint = false;
+        FyzLog.writeToLog();
         systemOutRule.clearLog();
-        FyzLog.logLevel = LogLevel.VERBOSE;
+        FyzLog.updateCurrentLogLevel(LogLevel.VERBOSE);
         //All calls should bail w/o doing anything
         FyzLog.v(null);
         FyzLog.d(null);

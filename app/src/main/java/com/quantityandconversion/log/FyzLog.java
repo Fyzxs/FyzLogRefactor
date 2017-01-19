@@ -7,9 +7,7 @@
 package com.quantityandconversion.log;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
 import android.util.Log;
-
 
 import java.util.Locale;
 
@@ -29,19 +27,18 @@ public final class FyzLog {
      */
     private static final String TAG_PREFIX = "FYZ:";
 
-    /**
-     * Write Log Message to {@link System#out#println}
-     */
-    @VisibleForTesting
-    public static boolean doPrint = false;
+    private static boolean doPrint = false;
+    /* package */ static void writeToSystem(){
+        doPrint = true;
+    }
+    /* package */ static void writeToLog(){
+        doPrint = false;
+    }
 
-    /**
-     * Controls the level of logging.
-     * This can be configured during build to limit logging messages to {@link Log#ERROR} or other levels.
-     * Default value is {@link Log#VERBOSE the lowest setting}
-     */
-    @VisibleForTesting
-    public static LogLevel logLevel = LogLevel.VERBOSE;
+    private static LogLevel logLevel = LogLevel.VERBOSE;
+    /* package */ static void updateCurrentLogLevel(final LogLevel logLevel){
+        FyzLog.logLevel = logLevel;
+    }
 
 
     /**
