@@ -9,8 +9,6 @@ package com.quantityandconversion.log;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.util.Locale;
-
 /**
  * Fyzxs Log(ger)
  * <p>
@@ -22,17 +20,13 @@ import java.util.Locale;
  */
 public final class FyzLog {
 //Understands handling a user request to log
-    /**
-     * This is the tag prefix that will be displayed in the tag component of the {@link Log#v(String, String) Android Log} methods
-     */
-    private static final String TAG_PREFIX = "FYZ:";
 
-    private static boolean doPrint = false;
+    private static Logger ActiveLogger = Logger.AndroidLog;
     /* package */ static void writeToSystem(){
-        doPrint = true;
+        ActiveLogger = Logger.SystemOut;
     }
     /* package */ static void writeToLog(){
-        doPrint = false;
+        ActiveLogger = Logger.AndroidLog;
     }
 
     private static LogLevel logLevel = LogLevel.VERBOSE;
@@ -57,11 +51,7 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void v(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.VERBOSE, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.VERBOSE, logLevel, msgFormat, args);
-        }
+        ActiveLogger.log(LogLevel.VERBOSE, logLevel, msgFormat, args);
     }
 
     /**
@@ -80,11 +70,7 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void d(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.DEBUG, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.DEBUG, logLevel, msgFormat, args);
-        }
+        ActiveLogger.log(LogLevel.DEBUG, logLevel, msgFormat, args);
     }
 
     /**
@@ -103,11 +89,7 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void i(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.INFO, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.INFO, logLevel, msgFormat, args);
-        }
+        ActiveLogger.log(LogLevel.INFO, logLevel, msgFormat, args);
     }
 
     /**
@@ -126,16 +108,8 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void w(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.WARN, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.WARN, logLevel, msgFormat, args);
-        }
+        ActiveLogger.log(LogLevel.WARN, logLevel, msgFormat, args);
     }
-    //endregion
-
-    //region error
-
     /**
      * The {@link Log#ERROR} level logging
      *
@@ -152,11 +126,7 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void e(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.ERROR, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.ERROR, logLevel, msgFormat, args);
-        }
+        ActiveLogger.log(LogLevel.ERROR, logLevel, msgFormat, args);
     }
 
     /**
@@ -175,90 +145,6 @@ public final class FyzLog {
      * @param args      the args to format in
      */
     public static void wtf(@NonNull final String msgFormat, final Object... args) {
-        if (doPrint) {
-            Logger.SystemOut.println(LogLevel.ASSERT, logLevel, msgFormat, args);
-        } else {
-            Logger.SystemOut.log(LogLevel.ASSERT, logLevel, msgFormat, args);
-        }
-    }
-
-    /**
-     * IFF the logLevel is high enough, logs to Android.
-     * <p>
-     * This will drop a null msg.
-     *
-     * @param level     The invoking level of logging
-     * @param msgFormat the message format string
-     * @param args      the args to format in
-     */
-    private static void log(final LogLevel level, final String msgFormat, final Object... args) {
-        if (level.logAt(logLevel) && msgFormat != null) {
-            final StackTraceElement frame = getCallingStackTraceElement();
-            final String tag = createTag(frame);
-            final String msg = String.format(Locale.US, msgFormat, args);
-            final String message = createMessage(frame, msg);
-
-            if(level == LogLevel.VERBOSE)
-                    Log.v(tag, message);
-            else if(level == LogLevel.DEBUG)
-                    Log.d(tag, message);
-            else if(level == LogLevel.INFO)
-                Log.i(tag, message);
-            else if(level == LogLevel.WARN)
-                Log.w(tag, message);
-            else if(level == LogLevel.ERROR)
-                    Log.e(tag, message);
-            else if(level == LogLevel.ASSERT)
-                    Log.wtf(tag, message);
-        }
-    }
-
-    /**
-     * Creates the tag to be used
-     *
-     * @param frame {@link StackTraceElement} to build the tag from
-     * @return Tag to use for the logged message
-     */
-    private static String createTag(final StackTraceElement frame) {
-        final String fullClassName = frame.getClassName();
-        final String className = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
-        return TAG_PREFIX + className;
-    }
-
-    /**
-     * Builds the final message to be logged.
-     * The format will be
-     * InvokingMethodName [currentThreadName] providedMessage
-     *
-     * @param frame The {@link StackTraceElement} to pull the method name from
-     * @param msg   the message to prefix the method name to
-     * @return The final message string
-     */
-    private static String createMessage(final StackTraceElement frame, final String msg) {
-        return String.format(Locale.US,
-                "[%s] %s : %s",
-                Thread.currentThread().getName(),
-                frame.getMethodName(),
-                msg);
-    }
-
-    /**
-     * Gets the {@link StackTraceElement} for the method that invoked logging
-     *
-     * @return {@link StackTraceElement} for the caller into {@link FyzLog}
-     */
-    private static StackTraceElement getCallingStackTraceElement() {
-        boolean hitLogger = false;
-        for (final StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            final boolean isLogger = ste.getClassName().startsWith(FyzLog.class.getName());
-            hitLogger = hitLogger || isLogger;
-            if (hitLogger && !isLogger) {
-                return ste;
-            }
-        }
-        return new StackTraceElement(FyzLog.class.getName(),
-                "getCallingStackTraceElement",
-                null,
-                -1);
+        ActiveLogger.log(LogLevel.ASSERT, logLevel, msgFormat, args);
     }
 }
