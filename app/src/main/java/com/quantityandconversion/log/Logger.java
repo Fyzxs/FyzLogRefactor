@@ -1,12 +1,11 @@
 package com.quantityandconversion.log;
 
-import android.util.Log;
-
 import java.util.Locale;
 
 /* package */ class Logger {
     private static final String TAG_PREFIX = "FYZ:";
     /* package */ static final Logger SystemOut = new Logger();
+    /* package */ static final Logger AndroidLog = new Logger();
 
     private Logger(){}
 
@@ -21,25 +20,14 @@ import java.util.Locale;
         System.out.println(output);
     }
 
-    /* package */ static void log(final LogLevel level, final LogLevel logLevel, final String msgFormat, final Object... args) {
+    /* package */ void log(final LogLevel level, final LogLevel logLevel, final String msgFormat, final Object... args) {
         if (level.logAt(logLevel) && msgFormat != null) {
             final StackTraceElement frame = getCallingStackTraceElement();
             final String tag = createTag(frame);
             final String msg = String.format(Locale.US, msgFormat, args);
             final String message = createMessage(frame, msg);
 
-            if(level == LogLevel.VERBOSE)
-                Log.v(tag, message);
-            else if(level == LogLevel.DEBUG)
-                Log.d(tag, message);
-            else if(level == LogLevel.INFO)
-                Log.i(tag, message);
-            else if(level == LogLevel.WARN)
-                Log.w(tag, message);
-            else if(level == LogLevel.ERROR)
-                Log.e(tag, message);
-            else if(level == LogLevel.ASSERT)
-                Log.wtf(tag, message);
+            level.log(tag, message);
         }
     }
     private static String createTag(final StackTraceElement frame) {

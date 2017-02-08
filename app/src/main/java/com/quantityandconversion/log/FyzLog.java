@@ -60,7 +60,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.VERBOSE, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.VERBOSE, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.VERBOSE, logLevel, msgFormat, args);
         }
     }
 
@@ -83,7 +83,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.DEBUG, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.DEBUG, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.DEBUG, logLevel, msgFormat, args);
         }
     }
 
@@ -106,7 +106,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.INFO, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.INFO, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.INFO, logLevel, msgFormat, args);
         }
     }
 
@@ -129,7 +129,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.WARN, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.WARN, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.WARN, logLevel, msgFormat, args);
         }
     }
     //endregion
@@ -155,7 +155,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.ERROR, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.ERROR, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.ERROR, logLevel, msgFormat, args);
         }
     }
 
@@ -178,7 +178,7 @@ public final class FyzLog {
         if (doPrint) {
             Logger.SystemOut.println(LogLevel.ASSERT, logLevel, msgFormat, args);
         } else {
-            Logger.log(LogLevel.ASSERT, logLevel, msgFormat, args);
+            Logger.SystemOut.log(LogLevel.ASSERT, logLevel, msgFormat, args);
         }
     }
 
