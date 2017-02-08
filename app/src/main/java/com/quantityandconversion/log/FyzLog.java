@@ -22,15 +22,20 @@ public final class FyzLog {
 //Understands handling a user request to log
 
     private static Logger ActiveLogger = Logger.AndroidLog;
-    /* package */ static void writeToSystem(){
+    private static LogLevel logLevel = LogLevel.VERBOSE;
+
+    /* package */
+    static void writeToSystem() {
         ActiveLogger = Logger.SystemOut;
     }
-    /* package */ static void writeToLog(){
+
+    /* package */
+    static void writeToLog() {
         ActiveLogger = Logger.AndroidLog;
     }
 
-    private static LogLevel logLevel = LogLevel.VERBOSE;
-    /* package */ static void updateCurrentLogLevel(final LogLevel logLevel){
+    /* package */
+    static void updateCurrentLogLevel(final LogLevel logLevel) {
         FyzLog.logLevel = logLevel;
     }
 
@@ -110,6 +115,7 @@ public final class FyzLog {
     public static void w(@NonNull final String msgFormat, final Object... args) {
         ActiveLogger.log(LogLevel.WARN, logLevel, msgFormat, args);
     }
+
     /**
      * The {@link Log#ERROR} level logging
      *

@@ -4,10 +4,11 @@ import java.util.Locale;
 
 /* package */ abstract class Logger {
     private static final String TAG_PREFIX = "FYZ:";
-    /* package */ static final Logger SystemOut = new Logger(){
+    /* package */ static final Logger SystemOut = new Logger() {
         @Override
         /* package */ void log(LogLevel level, LogLevel logLevel, String msgFormat, Object... args) {
-            if(msgFormat == null) throw new IllegalArgumentException("FyzLog message can not be null");
+            if (msgFormat == null)
+                throw new IllegalArgumentException("FyzLog message can not be null");
 
             final StackTraceElement frame = getCallingStackTraceElement();
             final String output =
@@ -31,9 +32,8 @@ import java.util.Locale;
         }
     };
 
-    private Logger(){}
-
-    /* package */ abstract void log(final LogLevel level, final LogLevel logLevel, final String msgFormat, final Object... args);
+    private Logger() {
+    }
 
     private static String createTag(final StackTraceElement frame) {
         final String fullClassName = frame.getClassName();
@@ -63,4 +63,7 @@ import java.util.Locale;
                 null,
                 -1);
     }
+
+    /* package */
+    abstract void log(final LogLevel level, final LogLevel logLevel, final String msgFormat, final Object... args);
 }
